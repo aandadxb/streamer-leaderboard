@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model leaderboard_campaign {
+  campaign_id     BigInt
+  brand           String
+  influencer_stag Int
+  start_date      DateTime  @db.Date
+  end_date        DateTime  @db.Date
+  entry_min_dep   Int?
+  entry_min_wgr   Int?
+  prize1_min_dep  Int?
+  prize1_min_wgr  Int?
+  prize2_min_dep  Int?
+  prize2_min_wgr  Int?
+  prize3_min_dep  Int?
+  prize3_min_wgr  Int?
+  inserted_date   DateTime? @default(dbgenerated("clock_timestamp()")) @db.Timestamp(6)
+  updated_date    DateTime? @db.Timestamp(6)
+
+  @@id([campaign_id, brand, influencer_stag, start_date, end_date], map: "leaderboard_campaign_pk")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model leaderboard_influencer {
+  campaign_id   Int?
+  user_id       BigInt?
+  email         String?
+  brand         String?   @db.VarChar
+  stag          String?
+  wagering      Decimal?  @db.Decimal
+  deposits      Decimal?  @db.Decimal
+  rank          BigInt?
+  inserted_date DateTime? @default(dbgenerated("clock_timestamp()")) @db.Timestamp(6)
+  updated_date  DateTime? @db.Timestamp(6)
+
+  @@unique([campaign_id, user_id, stag], map: "leaderboard_influencer_unique")
+  @@ignore
+}
+
+model Streamer {
+  id              Int      @id @default(autoincrement())
+  name            String
+  slug            String   @unique
+  avatar          Bytes?
+  avatarMimeType  String?  @map("avatar_mime_type")
+  stag            String
+  prizes          Json     @default("{}")
+  registrationUrl String?  @map("registration_url")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  loginUrl        String?  @map("login_url")
+  ctaUrl                String?  @map("cta_url")
+  campaignId            String?  @map("campaign_id")
+  termsAndConditionsHtml String?  @map("terms_and_conditions_html") @db.Text
+
+  @@map("streamers")
+}

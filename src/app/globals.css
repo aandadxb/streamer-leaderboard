@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+html {
+  overflow-x: clip;
+  overscroll-behavior: none;
+}
+
+body {
+  overflow-x: clip;
+  overscroll-behavior: none;
+}
+
+button, [role="button"] {
+  cursor: pointer;
+}
+
+@theme {
+  --font-sans: var(--font-new-hero), Arial, Helvetica, sans-serif;
+  --font-hero: var(--font-new-hero), sans-serif;
+
+  /* Brand Colors */
+  --color-brand-dark: #00142A;        
+  --color-brand-glass: #051429;       
+  --color-brand-gold: #FBE3A3;       
+  --color-brand-gold-dark: #BA9D64;   
+  --color-brand-offwhite: #F8FAFC;    
+  --color-brand-border: #D6D9E6;      
+  --color-surface-container: #212D57;
+  --color-surface-variant: #94A3B8; 
+
+  --color-surface-default: #00142A;
+  --color-state-layer: #F8FAFC14;
+
+  --color-rank-1-bg: #6E624B4D;
+  --color-rank-top-bg: #4646464D;
+  --color-rank-silver: #B0B0B0;
+
+  --background-image-glass-gradient: linear-gradient(
+    76.87deg, 
+    #FFFFFF29 -7.84%, 
+    #FFFFFF00 109.62%, 
+    #FFFFFF3D 109.62%
+  );
+
+  @keyframes breathe {
+    0%, 100% { opacity: 0.8; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.02); }
+  }
+
+  --breakpoint-xs: 360px;   
+  --breakpoint-md: 768px;   
+  --breakpoint-xl: 1280px;  
+  --breakpoint-3xl: 1740px; 
+}
+
+body {
+  background: linear-gradient(180deg, #133F6C 0%, #002854 50%, #00142A 100%);
+  min-height: 100vh;
+  color: #ffffff;
+  font-family: var(--font-new-hero), Arial, Helvetica, sans-serif;
+}
+
+.font-hero {
+  font-family: var(--font-new-hero), sans-serif;
+}
+
+/* Terms modal HTML content styling */
+.terms-content h1 { font-size: 1.25rem; font-weight: 700; color: #FBE3A3; margin: 1.5rem 0 0.75rem; }
+.terms-content h2 { font-size: 1.1rem; font-weight: 700; color: #FBE3A3; margin: 1.25rem 0 0.5rem; }
+.terms-content h3 { font-size: 1rem; font-weight: 600; color: #F8FAFC; margin: 1rem 0 0.5rem; }
+.terms-content p { margin: 0.5rem 0; }
+.terms-content ul, .terms-content ol { margin: 0.5rem 0 0.5rem 1.5rem; }
+.terms-content li { margin: 0.25rem 0; }
+.terms-content a { color: #FBE3A3; text-decoration: underline; }
+.terms-content strong { color: #F8FAFC; font-weight: 600; }
+.terms-content table { width: 100%; border-collapse: collapse; margin: 0.75rem 0; }
+.terms-content th, .terms-content td { border: 1px solid rgba(255,255,255,0.1); padding: 0.5rem 0.75rem; text-align: left; }
+.terms-content th { background: rgba(255,255,255,0.05); color: #F8FAFC; font-weight: 600; }
