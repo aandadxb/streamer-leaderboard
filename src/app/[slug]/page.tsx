@@ -11,8 +11,16 @@ import { Footer } from '../components/Footer';
 
 export const revalidate = 900;
 
-export default async function StreamerPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function StreamerPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ pid?: string | string[] }>;
+}) {
   const { slug } = await params;
+  const { pid: pidParam } = await searchParams;
+  const pid = Array.isArray(pidParam) ? pidParam[0] : pidParam;
   const data = await getCampaignData(slug);
 
   if (!data) notFound();
@@ -93,7 +101,7 @@ export default async function StreamerPage({ params }: { params: Promise<{ slug:
               </div>
             )}
 
-            <Leaderboard players={data.leaderboard.players} lastUpdatedISO={data.leaderboard.lastUpdated} nextUpdateISO={data.leaderboard.nextUpdate} unlockThreshold={threshold} usePoints={data.campaign.usePointsTerminology} />
+            <Leaderboard players={data.leaderboard.players} lastUpdatedISO={data.leaderboard.lastUpdated} nextUpdateISO={data.leaderboard.nextUpdate} unlockThreshold={threshold} usePoints={data.campaign.usePointsTerminology} pid={pid} />
           </div>
         </div>
       </div>
