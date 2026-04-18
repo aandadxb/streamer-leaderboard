@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCampaignData } from "@/lib/streamer-data";
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params;
-  const data = await getCampaignData(slug);
+  const pid = request.nextUrl.searchParams.get("pid") ?? undefined;
+  const data = await getCampaignData(slug, pid);
 
   if (!data) {
     return NextResponse.json({ error: "Streamer not found" }, { status: 404 });

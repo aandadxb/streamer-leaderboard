@@ -43,7 +43,15 @@ function maskUsername(email: string | null, userId: bigint): string {
   return `${name.slice(0, 3)}***${name.slice(-2)}`;
 }
 
-export async function getCampaignData(slug: string): Promise<CampaignResponse | null> {
+function parsePid(pid: string): { masked: boolean; digits: string } | null {
+  const digits = pid.replace(/\D/g, "");
+  if (!digits) return null;
+  const masked = pid.includes("*");
+  if (masked && digits.length < 3) return null;
+  return { masked, digits };
+}
+
+export async function getCampaignData(slug: string, pid?: string): Promise<CampaignResponse | null> {
   const streamer = await prisma.streamer.findUnique({
     where: { slug },
     select: {
@@ -94,6 +102,48 @@ export async function getCampaignData(slug: string): Promise<CampaignResponse | 
     }));
   }
 
+  let currentPlayer: CampaignResponse["leaderboard"]["currentPlayer"] = null;
+  if (campaign && pid) {
+    const parsed = parsePid(pid);
+    if (parsed) {
+      const entryMinDep = campaign.entry_min_dep ?? 0;
+      const entryMinWgr = campaign.entry_min_wgr ?? 0;
+      const suffix = `%${parsed.digits.slice(-3)}`;
+
+      const matchRows = parsed.masked
+        ? await prisma.$queryRaw<LeaderboardRow[]>`
+            SELECT user_id, email, wagering, deposits, rank
+            FROM leaderboard_influencer
+            WHERE campaign_id = ${campaign.campaign_id}
+              AND COALESCE(deposits, 0) >= ${entryMinDep}
+              AND COALESCE(wagering, 0) >= ${entryMinWgr}
+              AND user_id::text LIKE ${suffix}
+            ORDER BY rank ASC
+            LIMIT 1
+          `
+        : await prisma.$queryRaw<LeaderboardRow[]>`
+            SELECT user_id, email, wagering, deposits, rank
+            FROM leaderboard_influencer
+            WHERE campaign_id = ${campaign.campaign_id}
+              AND COALESCE(deposits, 0) >= ${entryMinDep}
+              AND COALESCE(wagering, 0) >= ${entryMinWgr}
+              AND user_id = ${BigInt(parsed.digits)}
+            LIMIT 1
+          `;
+
+      const row = matchRows[0];
+      if (row) {
+        currentPlayer = {
+          id: row.user_id.toString(),
+          rank: row.rank ? Number(row.rank) : 0,
+          username: maskUsername(row.email, row.user_id),
+          wagered: row.wagering ? Number(row.wagering) : 0,
+          deposited: row.deposits ? Number(row.deposits) : 0,
+        };
+      }
+    }
+  }
+
   const now = new Date();
   const hasAvatar = !!streamer.avatarMimeType;
   const prizes = (streamer.prizes || {}) as Record<string, string>;
@@ -142,6 +192,7 @@ export async function getCampaignData(slug: string): Promise<CampaignResponse | 
       nextUpdate: new Date((Math.floor(now.getTime() / (15 * 60000)) + 1) * 15 * 60000).toISOString(),
       players,
       podiumPlayers,
+      currentPlayer,
     },
   };
 }

@@ -39,5 +39,6 @@ export interface CampaignResponse {
     nextUpdate: string; // ISO 8601 UTC string (Calculated by backend: lastUpdated + 15 mins)
     players: Player[]; // Backend sorts and limits this array to the Top 10
     podiumPlayers: Player[]; // Top players who meet prize minimum thresholds
+    currentPlayer?: Player | null; // Player matched by ?pid, if any (used to render "You" row)
   };
 }

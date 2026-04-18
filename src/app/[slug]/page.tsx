@@ -21,7 +21,7 @@ export default async function StreamerPage({
   const { slug } = await params;
   const { pid: pidParam } = await searchParams;
   const pid = Array.isArray(pidParam) ? pidParam[0] : pidParam;
-  const data = await getCampaignData(slug);
+  const data = await getCampaignData(slug, pid);
 
   if (!data) notFound();
 
@@ -101,7 +101,7 @@ export default async function StreamerPage({
               </div>
             )}
 
-            <Leaderboard players={data.leaderboard.players} lastUpdatedISO={data.leaderboard.lastUpdated} nextUpdateISO={data.leaderboard.nextUpdate} unlockThreshold={threshold} usePoints={data.campaign.usePointsTerminology} pid={pid} />
+            <Leaderboard players={data.leaderboard.players} lastUpdatedISO={data.leaderboard.lastUpdated} nextUpdateISO={data.leaderboard.nextUpdate} unlockThreshold={threshold} usePoints={data.campaign.usePointsTerminology} currentPlayer={data.leaderboard.currentPlayer} />
           </div>
         </div>
       </div>

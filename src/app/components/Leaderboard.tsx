@@ -7,22 +7,8 @@ interface LeaderboardProps {
   nextUpdateISO: string;
   unlockThreshold: number;
   usePoints: boolean;
-  pid?: string;
+  currentPlayer?: Player | null;
 }
-
-const matchPlayerByPid = (players: Player[], pid: string | undefined): string | null => {
-  if (!pid) return null;
-  const isMasked = pid.includes("*");
-  if (isMasked) {
-    const digits = pid.replace(/\D/g, "");
-    if (digits.length < 3) return null;
-    const last3 = digits.slice(-3);
-    const match = players.find((p) => p.id.slice(-3) === last3);
-    return match?.id ?? null;
-  }
-  const match = players.find((p) => p.id === pid);
-  return match?.id ?? null;
-};
 
 export const Leaderboard: React.FC<LeaderboardProps> = ({
   players,
@@ -30,9 +16,14 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
   nextUpdateISO,
   unlockThreshold,
   usePoints,
-  pid,
+  currentPlayer,
 }) => {
-  const highlightedId = matchPlayerByPid(players, pid);
+  const topTen = players.slice(0, 10);
+  const currentInTopTen = currentPlayer
+    ? topTen.some((p) => p.id === currentPlayer.id)
+    : false;
+  const highlightedId = currentPlayer?.id ?? null;
+  const showYouRow = !!currentPlayer && !currentInTopTen;
   const formatAmount = (val: number): string => {
     const points = Math.round(val * 5);
     return new Intl.NumberFormat('en-US').format(points);
@@ -77,9 +68,12 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
       </div>
 
       <div className="flex flex-col">
-        {players.slice(0, 10).map((player) => {
+        {topTen.map((player, idx) => {
+          const isLast = idx === topTen.length - 1;
           const isYou = highlightedId === player.id;
-          const baseRowClasses = getRankClasses(player.rank);
+          const baseRowClasses = isLast && player.rank > 3
+            ? 'bg-transparent'
+            : getRankClasses(player.rank);
           const rowClasses = isYou
             ? 'bg-transparent border border-brand-gold rounded-xl shadow-[0_0_0_1px_rgba(251,227,163,0.4)]'
             : baseRowClasses;
@@ -115,6 +109,27 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
             </div>
           );
         })}
+
+        {showYouRow && currentPlayer && (
+          <>
+            <div className="flex justify-center items-center gap-1.5 pt-1 pb-4 md:pb-6" aria-hidden="true">
+              <span className="w-1 h-1 rounded-full bg-brand-offwhite/40" />
+              <span className="w-1 h-1 rounded-full bg-brand-offwhite/40" />
+              <span className="w-1 h-1 rounded-full bg-brand-offwhite/40" />
+            </div>
+            <div className="grid grid-cols-[40px_1fr_auto] md:grid-cols-[70px_1fr_auto] items-center gap-2 md:gap-4 px-3 md:px-6 py-2.5 md:py-4 my-[2px] md:my-1 rounded-xl bg-transparent border border-brand-gold shadow-[0_0_0_1px_rgba(251,227,163,0.4)]">
+              <div className="flex justify-center items-center">
+                <div className="flex items-center justify-center w-7 h-7 md:w-9 md:h-9 rounded-full border border-brand-gold font-hero font-bold text-xs md:text-sm text-brand-gold">
+                  {currentPlayer.rank}
+                </div>
+              </div>
+              <div className="font-hero font-bold tracking-wide text-[13px] md:text-base text-brand-gold">You</div>
+              <div className="font-hero font-bold tabular-nums text-[13px] md:text-base text-brand-gold">
+                {formatAmount(currentPlayer.wagered)}
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       <div className="w-full flex justify-center items-center gap-2 text-[10px] md:text-[11px] text-brand-offwhite/70 mt-4 md:mt-6 opacity-90 tracking-widest font-medium text-center">
